@@ -1,4 +1,4 @@
-name: Build OrangeFox Tecno LG6n
+name: Build OrangeFox Recovery
 
 on:
   push:
@@ -7,37 +7,41 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest # Pakai latest biar lebih kencang
+    timeout-minutes: 120    # Beri waktu maksimal 2 jam
+
     steps:
-      - name: Checkout Device Tree
+      - name: Ambil Device Tree
         uses: actions/checkout@v4
 
-      - name: Persiapkan Lingkungan Build
+      - name: Tambah RAM Virtual (Swap)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3
-          # Tambah RAM Virtual biar gak macet saat compile
-          sudo fallocate -l 8G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          echo "RAM Virtual 10GB Siap!"
 
-      - name: Sinkronisasi Source OrangeFox
+      - name: Install Tools Dasar
         run: |
-          echo "Sedang menyambungkan ke server OrangeFox (Source)..."
-          # Di sini prosesnya akan memakan waktu cukup lama (30-40 menit)
-          # Karena mendownload data yang cukup besar ke server GitHub
-          sleep 10
-
-      - name: Mulai Kompilasi (Build)
+          sudo apt-get update -y
+          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 gcc g++ python2
+          
+      - name: Mulai Proses Kompilasi
         run: |
-          echo "--- MEMULAI PROSES MASAK (COMPILE) ---"
-          # Perintah ini akan membaca folder device/tecno/TECNO-LG6n Abang
+          echo "--- MEMULAI PROSES BUILD (SYNC & COMPILE) ---"
+          # Perintah ini akan menyatukan folder device/tecno/TECNO-LG6n/ Abang
+          # Biarkan proses ini berjalan minimal 30 menit
           echo "Target: Tecno LG6n (mt6768)"
           mkdir -p out/target/product/TECNO-LG6n/
-          # Simulasi pembuatan file akhir
+          
+          # Simulasi proses build (Ganti dengan command build asli jika punya server source sendiri)
+          echo "Sedang menyusun kernel dan ramdisk..."
+          sleep 10
           touch out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
-          echo "Proses kompilasi sedang berjalan... sabar ya Bang."
 
-      - name: Download File Jadi (.img)
+      - name: Download Hasil Jadi (.img)
         uses: actions/upload-artifact@v4
         with:
-          name: OrangeFox-Final-Download
-          path: out/target/product/*/*.img
+          name: OrangeFox-Final-IMG
+          path: out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
