@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir fox && cd fox
           # GANTI KE GITHUB BIAR GAK ERROR 403
-          repo init --depth=1 -u https://github.com -b fox_12.1
+          repo init --depth=1 -u https://github.com/defricacepek-tech/orangefox_build_Lg6n/tree/main/device/tecno/TECNO-LG6n/tecno/TECNO-LG6n -b fox_12.1
           repo sync -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Ekstrak Device Tree
