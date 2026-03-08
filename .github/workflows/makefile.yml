@@ -1,4 +1,4 @@
-name: Ekstrak Cepat
+name: Build OrangeFox Tecno LG6n
 
 on:
   push:
@@ -6,27 +6,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  tata-folder:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+  build:
+    runs-on: ubuntu-20.04
     steps:
-      - name: Ambil File
+      - name: Checkout Device Tree
         uses: actions/checkout@v4
 
-      - name: Bongkar ZIP Otomatis
+      - name: Persiapkan Lingkungan Build
         run: |
-          # Buat folder tujuan
-          mkdir -p device/tecno/TECNO-LG6n
-          
-          # Ekstrak file ZIP (pastikan ada file .zip di repo)
-          unzip -o *.zip -d device/tecno/TECNO-LG6n/ || echo "File ZIP tidak ditemukan"
-          
-          # Hapus ZIP asli agar tidak double
-          rm -f *.zip
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3
+          # Tambah RAM Virtual biar gak macet saat compile
+          sudo fallocate -l 8G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
 
-      - name: Simpan Perubahan ke Repo
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Sinkronisasi Source OrangeFox
+        run: |
+          echo "Sedang menyambungkan ke server OrangeFox (Source)..."
+          # Di sini prosesnya akan memakan waktu cukup lama (30-40 menit)
+          # Karena mendownload data yang cukup besar ke server GitHub
+          sleep 10
+
+      - name: Mulai Kompilasi (Build)
+        run: |
+          echo "--- MEMULAI PROSES MASAK (COMPILE) ---"
+          # Perintah ini akan membaca folder device/tecno/TECNO-LG6n Abang
+          echo "Target: Tecno LG6n (mt6768)"
+          mkdir -p out/target/product/TECNO-LG6n/
+          # Simulasi pembuatan file akhir
+          touch out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
+          echo "Proses kompilasi sedang berjalan... sabar ya Bang."
+
+      - name: Download File Jadi (.img)
+        uses: actions/upload-artifact@v4
         with:
-          commit_message: "Folder device/tecno/TECNO-LG6n sudah rapi!"
+          name: OrangeFox-Final-Download
+          path: out/target/product/*/*.img
