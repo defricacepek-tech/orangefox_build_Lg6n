@@ -9,26 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Ambil Bahan
         uses: actions/checkout@v4
 
-      - name: Persiapkan Alat (AIK)
+      - name: Ambil Alat (AIK)
         run: |
-          # Pakai AIK versi Linux yang paling stabil buat bongkar-pasang .img
-          wget https://github.com -O aik.zip
-          unzip aik.zip
-          mv Android-Image-Kitchen-master AIK
+          # Menggunakan Git Clone agar file tidak korup/rusak
+          git clone https://github.com AIK
           chmod -R 755 AIK/
 
       - name: Proses Menjadi IMG
         run: |
           mkdir -p output
           
-          # Cari file .img di folder device Abang (seperti dtb.img di gambar tadi)
+          # Mencari file .img di dalam folder device/tecno/TECNO-LG6n/
           FILE_IMG=$(find device/tecno/TECNO-LG6n/ -name "*.img" | head -n 1)
           
           if [ -z "$FILE_IMG" ]; then
-            echo "FILE .IMG TIDAK KETEMU!"
+            echo "--- ERROR: FILE .IMG TIDAK KETEMU DI FOLDER DEVICE! ---"
             exit 1
           fi
 
@@ -40,8 +38,14 @@ jobs:
           ./unpackimg.sh boot.img
           ./repackimg.sh
           
-          # Pindahkan hasil jadinya
-          mv image-new.img ../output/OrangeFox-Tecno-LG6n.img 2>/dev/null || echo "Gagal bungkus!"
+          # Pindahkan hasil jadinya ke folder luar
+          if; then
+            mv image-new.img ../output/OrangeFox-Tecno-LG6n.img
+            echo "BERHASIL: File .img sudah jadi!"
+          else
+            echo "GAGAL: File hasil repack tidak muncul!"
+            exit 1
+          fi
 
       - name: Download Hasil Jadi
         uses: actions/upload-artifact@v4
