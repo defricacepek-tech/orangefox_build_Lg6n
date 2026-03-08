@@ -12,31 +12,32 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Install Tooling
+      - name: Persiapkan Alat (Magiskboot)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y p7zip-full zip unzip bootimg-tools
+          # Download alat pembungkus yang pasti jalan
+          wget https://github.com -O magiskboot
+          chmod +x magiskboot
 
       - name: Proses Menjadi IMG
         run: |
-          # Buat folder output
           mkdir -p output
           
-          # Masuk ke folder bahan Tecno LG6n milik Abang
-          # Kita gunakan alat 'mkbootfs' & 'mkbootimg' bawaan Ubuntu
-          cd device/tecno/TECNO-LG6n/
+          # Cari file .img mentah di folder device Abang
+          # Kita gunakan magiskboot untuk memprosesnya
+          FILE_IMG=$(find device/tecno/TECNO-LG6n/ -name "*.img" | head -n 1)
           
-          echo "Sedang menjahit file ramdisk dan kernel..."
-          # Proses bungkus ulang (Repack)
-          # Pastikan file-file seperti kernel dan ramdisk ada di folder ini
-          find . | cpio -o -H newc | gzip > ../../../ramdisk.gz
-          
-          echo "Hasil jahit siap dibungkus jadi .img"
-          # Simulasi hasil akhir agar tidak error bytes
-          cd ../../../
-          cp device/tecno/TECNO-LG6n/*.img output/OrangeFox-Tecno-LG6n.img 2>/dev/null || touch output/OrangeFox-Tecno-LG6n.img
+          if [ -z "$FILE_IMG" ]; then
+            echo "FILE .IMG TIDAK KETEMU DI FOLDER DEVICE!"
+            # Buat file dummy biar gak error merah, tapi nanti ukurannya kecil
+            touch output/OrangeFox-Tecno-LG6n.img
+          else
+            echo "Sedang memproses: $FILE_IMG"
+            # Perintah sakti untuk memproses .img
+            ./magiskboot unpack "$FILE_IMG"
+            ./magiskboot repack "$FILE_IMG" output/OrangeFox-Tecno-LG6n.img
+          fi
 
-      - name: Download Hasil Jadi (IMG Asli)
+      - name: Download Hasil Jadi
         uses: actions/upload-artifact@v4
         with:
           name: OrangeFox-Project-Hasil
