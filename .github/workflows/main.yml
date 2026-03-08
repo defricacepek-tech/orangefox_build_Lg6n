@@ -1,4 +1,4 @@
-name: Build OrangeFox Tecno LG6n Full
+name: Build OrangeFox Tecno LG6n
 
 on:
   workflow_dispatch:
@@ -7,44 +7,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Ambil Bahan dari Repo Kamu
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: 2. Siapin Dapur (Tools & Storage)
+      - name: Install Repo Tool
         run: |
-          sudo rm -rf /usr/share/dotnet /etc/mysql /usr/local/lib/android /opt/ghc
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 gcc g++ libssl-dev repo
-          
-      - name: 3. Download Source OrangeFox (Pusat Kode)
+          mkdir -p ~/bin
+          curl https://storage.googleapis.com > ~/bin/repo
+          chmod a+x ~/bin/repo
+          sudo ln -sf ~/bin/repo /usr/bin/repo
+
+      - name: Sync OrangeFox Source
         run: |
           mkdir fox && cd fox
-          # LINK INI JANGAN DIGANTI! Ini pusat kode OrangeFox (A12.1)
           repo init --depth=1 -u https://github.com -b fox_12.1
           repo sync -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-      - name: 4. Bongkar ZIP Device Tree Kamu
+      - name: Bongkar Device Tree
         run: |
-          # Bikin folder tujuan sesuai struktur Android
           mkdir -p fox/device/tecno/LG6n
-          # Bongkar file ZIP kamu ke folder itu
           unzip Device_Tree_Orange*.zip -d fox/device/tecno/LG6n
-          # Cek isi folder biar yakin filenya ada
-          ls -R fox/device/tecno/LG6n
 
-      - name: 5. Masak OrangeFox (Compiling)
+      - name: Build Recovery
         run: |
           cd fox
           source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
           export FOX_VERSION="R11.1_Unofficial"
           export LC_ALL="C"
-          # Panggil nama target sesuai file .mk kamu
           lunch omni_TECNO-LG6n-eng
           mka recoveryimage -j$(nproc --all)
 
-      - name: 6. Upload Hasil Jadi (.img)
+      - name: Upload Hasil
         uses: actions/upload-artifact@v4
         with:
-          name: OrangeFox-Tecno-LG6n
+          name: OrangeFox-LG6n
           path: fox/out/target/product/LG6n/*.img
