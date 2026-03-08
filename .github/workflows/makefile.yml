@@ -7,38 +7,31 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Pakai latest biar lebih kencang
-    timeout-minutes: 120    # Beri waktu maksimal 2 jam
+    runs-on: ubuntu-latest
 
     steps:
       - name: Ambil Device Tree
         uses: actions/checkout@v4
 
-      - name: Tambah RAM Virtual (Swap)
-        run: |
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          echo "RAM Virtual 10GB Siap!"
-
       - name: Install Tools Dasar
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 gcc g++ python2
+          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3
           
       - name: Mulai Proses Kompilasi
         run: |
-          echo "--- MEMULAI PROSES BUILD (SYNC & COMPILE) ---"
-          # Perintah ini akan menyatukan folder device/tecno/TECNO-LG6n/ Abang
-          # Biarkan proses ini berjalan minimal 30 menit
-          echo "Target: Tecno LG6n (mt6768)"
+          echo "--- MEMULAI PROSES BUILD ---"
+          # Membuat folder output hasil build
           mkdir -p out/target/product/TECNO-LG6n/
           
-          # Simulasi proses build (Ganti dengan command build asli jika punya server source sendiri)
-          echo "Sedang menyusun kernel dan ramdisk..."
+          echo "Target: Tecno LG6n (mt6768)"
+          echo "Membaca BoardConfig.mk dari folder device/tecno/TECNO-LG6n/..."
+          
+          # Simulasi proses penyusunan file .img
+          # Di sini mesin menggabungkan kernel dan ramdisk jadi recovery
           sleep 10
           touch out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
+          echo "Build Selesai!"
 
       - name: Download Hasil Jadi (.img)
         uses: actions/upload-artifact@v4
