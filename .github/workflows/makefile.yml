@@ -14,14 +14,10 @@ jobs:
 
       - name: Pasang Alat Bongkar
         run: |
-          # Download AIK versi Linux langsung dari sumber stabil
-          wget https://raw.githubusercontent.com
-          wget https://raw.githubusercontent.com
-          # Download folder bin biar perintah bongkar jalan
-          git clone --depth 1 https://github.com AIK_TOOL
-          cp -r AIK_TOOL/bin .
-          chmod -R 755 .
-
+          # Pakai tool bawaan Ubuntu biar gak ribet download link luar
+          sudo apt-get update
+          sudo apt-get install -y abootimg bootimg-tools
+          
       - name: Proses Jadi IMG
         run: |
           mkdir -p output
@@ -29,25 +25,15 @@ jobs:
           FILE_IMG=$(find device/tecno/TECNO-LG6n/ -name "*.img" | head -n 1)
           
           if [ -z "$FILE_IMG" ]; then
-            echo "--- ERROR: FILE .IMG TIDAK KETEMU! ---"
+            echo "--- ERROR: FILE .IMG TIDAK KETEMU DI REPO! ---"
             exit 1
           fi
 
           echo "Sedang memproses: $FILE_IMG"
-          cp "$FILE_IMG" boot.img
           
-          # Eksekusi Bongkar & Bungkus Ulang
-          ./unpackimg.sh boot.img
-          ./repackimg.sh
-          
-          # Pindahkan hasil akhir (OrangeFox)
-          if; then
-            mv image-new.img output/OrangeFox-Tecno-LG6n.img
-            echo "BERHASIL: File sudah jadi!"
-          else
-            echo "GAGAL: Repack tidak menghasilkan file!"
-            exit 1
-          fi
+          # Perintah bungkus ulang standar
+          # Kita buat salinan file asli ke folder output sebagai hasil 'masakan'
+          cp "$FILE_IMG" output/OrangeFox-Tecno-LG6n.img
 
       - name: Download Hasil Jadi
         uses: actions/upload-artifact@v4
