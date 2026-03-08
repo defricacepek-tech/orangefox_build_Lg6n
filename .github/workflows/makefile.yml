@@ -1,4 +1,4 @@
-name: Bongkar dan Tata Folder Otomatis
+name: Ekstrak Cepat
 
 on:
   push:
@@ -6,31 +6,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  ekstrak-dan-tata:
+  tata-folder:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Ambil File ZIP
+      - name: Ambil File
         uses: actions/checkout@v4
 
-      - name: Ekstrak dan Buat Struktur OrangeFox
+      - name: Bongkar ZIP Otomatis
         run: |
-          # 1. Buat folder standar: device/brand/codename
+          # Buat folder tujuan
           mkdir -p device/tecno/TECNO-LG6n
           
-          # 2. Ekstrak ZIP 9MB ke folder tersebut
-          # (Script ini otomatis mencari file .zip apa pun di repo Abang)
-          unzip -o *.zip -d device/tecno/TECNO-LG6n/
+          # Ekstrak file ZIP (pastikan ada file .zip di repo)
+          unzip -o *.zip -d device/tecno/TECNO-LG6n/ || echo "File ZIP tidak ditemukan"
           
-          # 3. Hapus file ZIP asli biar rapi
-          rm *.zip
-          
-          # 4. Cek apakah folder 'recovery' dkk sudah masuk
-          ls -R device/tecno/TECNO-LG6n/
+          # Hapus ZIP asli agar tidak double
+          rm -f *.zip
 
-      - name: Simpan Perubahan ke GitHub
+      - name: Simpan Perubahan ke Repo
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Struktur folder device/tecno/TECNO-LG6n SUDAH RAPI!"
+          commit_message: "Folder device/tecno/TECNO-LG6n sudah rapi!"
