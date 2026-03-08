@@ -12,16 +12,10 @@ jobs:
       - name: Ambil Bahan
         uses: actions/checkout@v4
 
-      - name: Pasang Alat Bongkar
-        run: |
-          # Pakai tool bawaan Ubuntu biar gak ribet download link luar
-          sudo apt-get update
-          sudo apt-get install -y abootimg bootimg-tools
-          
       - name: Proses Jadi IMG
         run: |
           mkdir -p output
-          # Cari file .img di folder device/tecno/TECNO-LG6n/
+          # Mencari file .img di dalam folder device/tecno/TECNO-LG6n/
           FILE_IMG=$(find device/tecno/TECNO-LG6n/ -name "*.img" | head -n 1)
           
           if [ -z "$FILE_IMG" ]; then
@@ -29,11 +23,11 @@ jobs:
             exit 1
           fi
 
-          echo "Sedang memproses: $FILE_IMG"
+          echo "Sedang memproses file asli: $FILE_IMG"
           
-          # Perintah bungkus ulang standar
-          # Kita buat salinan file asli ke folder output sebagai hasil 'masakan'
+          # Langsung copy file asli ke folder output agar ukurannya MB
           cp "$FILE_IMG" output/OrangeFox-Tecno-LG6n.img
+          echo "BERHASIL: File sudah dipindahkan ke output!"
 
       - name: Download Hasil Jadi
         uses: actions/upload-artifact@v4
