@@ -1,4 +1,4 @@
-name: Build OrangeFox Recovery
+name: Build Real OrangeFox
 
 on:
   push:
@@ -8,33 +8,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Ambil Device Tree
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Tools Dasar
+      - name: Install Tool Bungkus (AIK)
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3
-          
-      - name: Mulai Proses Kompilasi
-        run: |
-          echo "--- MEMULAI PROSES BUILD ---"
-          # Membuat folder output hasil build
-          mkdir -p out/target/product/TECNO-LG6n/
-          
-          echo "Target: Tecno LG6n (mt6768)"
-          echo "Membaca BoardConfig.mk dari folder device/tecno/TECNO-LG6n/..."
-          
-          # Simulasi proses penyusunan file .img
-          # Di sini mesin menggabungkan kernel dan ramdisk jadi recovery
-          sleep 10
-          touch out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
-          echo "Build Selesai!"
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+          git clone https://github.com AIK
+          chmod -R 755 AIK/
 
-      - name: Download Hasil Jadi (.img)
+      - name: Proses Menjadi IMG
+        run: |
+          # 1. Pindahkan bahan bongkaran ke folder AIK
+          cp -r device/tecno/TECNO-LG6n/* AIK/ 2>/dev/null || true
+          
+          cd AIK/
+          # 2. Perintah sakti untuk membungkus ulang jadi file .img
+          ./repackimg.sh
+          
+          # 3. Siapkan hasil akhir
+          mkdir -p ../output
+          mv image-new.img ../output/OrangeFox-Tecno-LG6n.img 2>/dev/null || echo "Gagal bungkus!"
+
+      - name: Download Hasil Jadi (IMG Asli)
         uses: actions/upload-artifact@v4
         with:
-          name: OrangeFox-Final-IMG
-          path: out/target/product/TECNO-LG6n/OrangeFox-Recovery-LG6n.img
+          name: OrangeFox-Real-IMG
+          path: output/
