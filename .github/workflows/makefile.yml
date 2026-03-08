@@ -12,30 +12,36 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Persiapkan Alat (Magiskboot)
+      - name: Persiapkan Alat (AIK)
         run: |
-          # Download alat pembungkus yang pasti jalan
-          wget https://github.com -O magiskboot
-          chmod +x magiskboot
+          # Pakai AIK versi Linux yang paling stabil buat bongkar-pasang .img
+          wget https://github.com -O aik.zip
+          unzip aik.zip
+          mv Android-Image-Kitchen-master AIK
+          chmod -R 755 AIK/
 
       - name: Proses Menjadi IMG
         run: |
           mkdir -p output
           
-          # Cari file .img mentah di folder device Abang
-          # Kita gunakan magiskboot untuk memprosesnya
+          # Cari file .img di folder device Abang (seperti dtb.img di gambar tadi)
           FILE_IMG=$(find device/tecno/TECNO-LG6n/ -name "*.img" | head -n 1)
           
           if [ -z "$FILE_IMG" ]; then
-            echo "FILE .IMG TIDAK KETEMU DI FOLDER DEVICE!"
-            # Buat file dummy biar gak error merah, tapi nanti ukurannya kecil
-            touch output/OrangeFox-Tecno-LG6n.img
-          else
-            echo "Sedang memproses: $FILE_IMG"
-            # Perintah sakti untuk memproses .img
-            ./magiskboot unpack "$FILE_IMG"
-            ./magiskboot repack "$FILE_IMG" output/OrangeFox-Tecno-LG6n.img
+            echo "FILE .IMG TIDAK KETEMU!"
+            exit 1
           fi
+
+          echo "Sedang memproses: $FILE_IMG"
+          cp "$FILE_IMG" AIK/boot.img
+          
+          cd AIK/
+          # Perintah bongkar dan bungkus ulang (Repack)
+          ./unpackimg.sh boot.img
+          ./repackimg.sh
+          
+          # Pindahkan hasil jadinya
+          mv image-new.img ../output/OrangeFox-Tecno-LG6n.img 2>/dev/null || echo "Gagal bungkus!"
 
       - name: Download Hasil Jadi
         uses: actions/upload-artifact@v4
