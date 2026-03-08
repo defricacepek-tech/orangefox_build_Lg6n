@@ -1,4 +1,4 @@
-name: Build OrangeFox Tecno LG6n
+name: Bongkar dan Tata Folder Otomatis
 
 on:
   push:
@@ -6,39 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    # Ganti ke ubuntu-latest biar gak gampang nyangkut
+  ekstrak-dan-tata:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout Repo
+      - name: Ambil File ZIP
         uses: actions/checkout@v4
 
-      - name: Tambah RAM Virtual (Swap)
+      - name: Ekstrak dan Buat Struktur OrangeFox
         run: |
-          sudo swapoff -a
-          sudo fallocate -l 8G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          echo "RAM Virtual 8GB Siap!"
+          # 1. Buat folder standar: device/brand/codename
+          mkdir -p device/tecno/TECNO-LG6n
+          
+          # 2. Ekstrak ZIP 9MB ke folder tersebut
+          # (Script ini otomatis mencari file .zip apa pun di repo Abang)
+          unzip -o *.zip -d device/tecno/TECNO-LG6n/
+          
+          # 3. Hapus file ZIP asli biar rapi
+          rm *.zip
+          
+          # 4. Cek apakah folder 'recovery' dkk sudah masuk
+          ls -R device/tecno/TECNO-LG6n/
 
-      - name: Install Alat Masak
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 gcc g++ python2
-
-      - name: Mulai Proses Build
-        run: |
-          echo "Sedang menyambungkan ke mesin OrangeFox..."
-          echo "Target: Tecno LG6n (Chipset mt6768)"
-          # Di sini mesin mulai bekerja... 
-          # Tunggu minimal 15-30 menit, jangan di-cancel dulu
-          sleep 10 
-          echo "Proses sinkronisasi sedang berjalan di latar belakang..."
-
-      - name: Upload File Jadi
-        uses: actions/upload-artifact@v4
+      - name: Simpan Perubahan ke GitHub
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: OrangeFox-Tecno-LG6n-IMG
-          path: out/target/product/*/*.img
+          commit_message: "Struktur folder device/tecno/TECNO-LG6n SUDAH RAPI!"
