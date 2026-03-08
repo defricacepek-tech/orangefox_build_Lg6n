@@ -1,0 +1,44 @@
+name: Build OrangeFox Tecno LG6n
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Siapin Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential zip curl libstdc++6 git wget python3 gcc g++ libssl-dev repo
+          
+      - name: Sync OrangeFox Source (Pake GitHub Link)
+        run: |
+          mkdir fox && cd fox
+          # GANTI KE GITHUB BIAR GAK ERROR 403
+          repo init --depth=1 -u https://github.com -b fox_12.1
+          repo sync -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+      - name: Ekstrak Device Tree
+        run: |
+          mkdir -p fox/device/tecno/LG6n
+          unzip Device_Tree_Orange*.zip -d fox/device/tecno/LG6n
+
+      - name: Build OrangeFox
+        run: |
+          cd fox
+          source build/envsetup.sh
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export FOX_VERSION="R11.1_Unofficial"
+          export LC_ALL="C"
+          lunch omni_TECNO-LG6n-eng
+          mka recoveryimage -j$(nproc --all)
+
+      - name: Upload Hasil Jadi
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-LG6n
+          path: fox/out/target/product/LG6n/*.img
